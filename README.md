@@ -160,7 +160,7 @@ Includes:
 * Public Transport Hubs
 * Emergency Response
 
-## **POST /analyze-image**
+## **POST /askAi**
 
 ---
 
