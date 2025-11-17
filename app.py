@@ -1,17 +1,19 @@
 # app.py
 import os
-import re
 import json
 import logging
-from typing import Optional, List, Dict, Any
 from dotenv import load_dotenv
-load_dotenv()   
 
-from fastapi import FastAPI, File, UploadFile, HTTPException, status
+from fastapi import FastAPI, HTTPException, File, UploadFile, Form, Body, status
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
+from typing import Optional, List, Dict, Any
+
 from google import genai
 from google.genai import types
+
+# Load environment variables
+load_dotenv()
 
 # --- CONFIG ---
 API_KEY = os.getenv("GEMINI_API_KEY")  # set this in your deployment environment
@@ -28,6 +30,9 @@ client = genai.Client(api_key=API_KEY)
 app = FastAPI(title="CrowdDetector API", version="1.0")
 logger = logging.getLogger("uvicorn.error")
 
+
+class TextInput(BaseModel):
+    text: str
 
 class CrowdResult(BaseModel):
     people_count: Optional[int]
@@ -197,3 +202,41 @@ async def analyze_image(file: UploadFile = File(...), user_id: Optional[str] = N
         raise HTTPException(status_code=500, detail="Failed to normalize model response")
 
     return JSONResponse(status_code=200, content=result.dict())
+
+
+@app.post("/askAi/")
+async def analyze_image(
+    image: UploadFile = File(...),
+    user_prompt: str = Form(...)
+):
+    image_bytes = await image.read()
+
+    base_prompt = """
+    You are a visual assistant for blind navigation.
+    - Only answer using information visible in the image.
+    - If a user asks for information that is not visible (e.g., bus number or gate),
+    reply with: "Not visible. Please turn the camera slightly left or right and ask again."
+    - For crowd density questions tell if how crowded the place is from the picture.
+    - Be concise.
+    """
+
+    final_prompt = f"{base_prompt}\nUser prompt: {user_prompt}"
+
+    response = client.models.generate_content(
+        model="gemini-2.5-flash",
+        contents=[
+            types.Part.from_bytes(
+                data=image_bytes,
+                mime_type=image.content_type or "image/jpeg",
+            ),
+            final_prompt
+        ]
+    )
+    
+    return {"response": response.text}
+
+
+
+
+
+
