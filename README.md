@@ -160,10 +160,7 @@ Includes:
 * Public Transport Hubs
 * Emergency Response
 
-  # Analyze Image Endpoint
-
-## Endpoint
-`POST /askAi/`
+## **POST /analyze-image**
 
 ---
 
