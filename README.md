@@ -160,4 +160,48 @@ Includes:
 * Public Transport Hubs
 * Emergency Response
 
+  # Analyze Image Endpoint
+
+## Endpoint
+`POST /askAi/`
+
+---
+
+## Description
+This endpoint allows users to upload an image along with a prompt. The AI acts as a visual assistant for **blind navigation** and answers based solely on the visible content in the image.
+
+---
+
+## Request
+
+### Form Data
+
+| Field        | Type          | Description                                                                 |
+|--------------|---------------|-----------------------------------------------------------------------------|
+| `image`      | `file`        | Image file to analyze (required).                                           |
+| `user_prompt`| `string`      | User's question or request about the image (required).                      |
+
+---
+
+### Prompt Behavior
+The AI follows these rules:
+
+- Only answer using **information visible** in the image.
+- If information is not visible (e.g., bus number or gate), respond:
+  > "Not visible. Please turn the camera slightly left or right and ask again."
+- For crowd density questions, describe how crowded the place is.
+- Answers are **concise**.
+
+---
+
+## Response
+
+### JSON Response
+
+```json
+{
+  "response": "string"  // AI-generated answer based on image and user prompt
+}
+
+
 ---
